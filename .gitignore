@@ -1,0 +1,24 @@
+# Local environments and caches
+.DS_Store
+.env
+.env.*
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Course data and generated outputs
+data/
+materials/raw/
+assignments/**/data/
+assignments/**/checkpoints/
+assignments/**/runs/
+assignments/**/wandb/
+assignments/**/*.zip
+
+# Local scratch space
+scratch/
+tmp/
+
