@@ -1,6 +1,22 @@
 # Materials
 
-This directory is for local course materials that are useful while studying.
+Local course materials for offline study.
 
-`materials/raw/` is ignored by Git. I keep local copies there for convenience, while `docs/resources.md` records the canonical upstream URLs.
+## Layout
 
+- `raw/lectures/` — official lecture sources (`.py` executable lectures + `.pdf` slides). **Gitignored.**
+- `raw/assignments/` — official assignment handout PDFs. **Gitignored.**
+
+Searchable extractions that *are* tracked in Git live under:
+
+- `docs/lectures/`
+- `docs/handouts/`
+- `docs/text-first-study.md`
+
+Canonical upstream URLs are recorded in `docs/resources.md`.
+
+## Refresh
+
+```sh
+./scripts/sync_course_docs.sh
+```

@@ -1,0 +1,186 @@
+# CS336 Assignment 1 progress tracker
+# Update statuses: not_started | in_progress | done | blocked
+# Update tests with: pending | passing | failing
+# Last updated: 2026-07-17
+
+meta:
+  assignment: "1-basics"
+  handout: docs/handouts/cs336_assignment1_basics.md
+  starter: assignments/assignment1-basics/
+  version: "26.0.3"
+  mode: text-first  # skipping lecture videos
+  ai_policy: implementation-assisted  # local AGENTS.md; not official course TA-only policy
+  collab: learning_first  # teach from situation; implement to unblock; decide only on real forks
+  delegation: root AGENTS.md tiers  # owner=harness direction; Tier 1 reasoning owned, Tier 3 shipped by agent
+  quality: green_tests_and_maintainable  # clear modules, short comments on invariants
+  collab_rules:
+    - "Primary: LLM teaches from current context (concept, failure, milestone)—not silent shipping"
+    - "Decisions only when a real fork exists; do not invent decision menus for ceremony"
+    - "Implement when path is clear from handout/tests; narrate why + what to remember"
+    - "Owner need not write core code; should leave with know-how, not just green checks"
+
+current:
+  focus: "§2 BPE redo (learning-first pass, not silent ship)"
+  next_action: "Owner works through pretok + merge mental model; then encode/decode; code already green as reference"
+
+phases:
+  setup:
+    status: done
+    items:
+      - id: env_uv
+        status: done
+        note: "uv sync + pytest baseline NotImplementedError"
+      - id: docs_synced
+        status: done
+        note: "handouts + lectures extracted under docs/"
+      - id: data_downloaded
+        status: not_started
+        note: "only needed for TinyStories/OWT experiments, not unit tests"
+
+  section1_overview:
+    status: done
+    items:
+      - id: read_overview
+        status: done
+        note: "What you implement / code layout / API rules"
+      - id: understand_adapters
+        status: done
+        note: "adapters.py is glue only; logic lives in cs336_basics/"
+
+  section2_tokenizer:
+    status: in_progress
+    items:
+      - id: unicode1_written
+        status: done
+        tests: null
+        note: "concepts done (owner)"
+      - id: unicode2_written
+        status: done
+        tests: null
+        note: "concepts done (owner)"
+      - id: understand_bpe_example
+        status: done
+        note: "encoded in train_bpe implementation"
+      - id: train_bpe
+        status: done
+        adapter: run_train_bpe
+        tests: passing
+        note: "test_train_bpe.py all green; impl in cs336_basics/bpe.py"
+      - id: tokenizer_class
+        status: done
+        adapter: get_tokenizer
+        tests: passing
+        note: "test_tokenizer.py 23 passed, 2 skipped (linux rlimit)"
+      - id: experiment_tinystories_bpe
+        status: not_started
+        note: "needs data download; unit tests already pass"
+
+  section3_model:
+    status: not_started
+    items:
+      - id: linear
+        status: not_started
+        adapter: run_linear
+        tests: pending
+      - id: embedding
+        status: not_started
+        adapter: run_embedding
+        tests: pending
+      - id: rmsnorm
+        status: not_started
+        adapter: run_rmsnorm
+        tests: pending
+      - id: swiglu
+        status: not_started
+        adapter: run_swiglu
+        tests: pending
+      - id: rope
+        status: not_started
+        adapter: run_rope
+        tests: pending
+      - id: softmax
+        status: not_started
+        adapter: run_softmax
+        tests: pending
+      - id: sdpa
+        status: not_started
+        adapter: run_scaled_dot_product_attention
+        tests: pending
+      - id: mha
+        status: not_started
+        adapter: run_multihead_self_attention
+        tests: pending
+      - id: mha_rope
+        status: not_started
+        adapter: run_multihead_self_attention_with_rope
+        tests: pending
+      - id: transformer_block
+        status: not_started
+        adapter: run_transformer_block
+        tests: pending
+      - id: transformer_lm
+        status: not_started
+        adapter: run_transformer_lm
+        tests: pending
+
+  section4_loss_optim:
+    status: not_started
+    items:
+      - id: cross_entropy
+        status: not_started
+        adapter: run_cross_entropy
+        tests: pending
+      - id: adamw
+        status: not_started
+        adapter: get_adamw_cls
+        tests: pending
+      - id: lr_cosine
+        status: not_started
+        adapter: run_get_lr_cosine_schedule
+        tests: pending
+      - id: grad_clip
+        status: not_started
+        adapter: run_gradient_clipping
+        tests: pending
+
+  section5_train:
+    status: not_started
+    items:
+      - id: get_batch
+        status: not_started
+        adapter: run_get_batch
+        tests: pending
+      - id: checkpoint
+        status: not_started
+        adapters: [run_save_checkpoint, run_load_checkpoint]
+        tests: pending
+      - id: training_loop
+        status: not_started
+        note: "your own train script + experiments"
+      - id: tinystories_train
+        status: not_started
+      - id: owt_train_leaderboard
+        status: not_started
+
+test_suites:
+  test_train_bpe.py: passing
+  test_tokenizer.py: passing
+  test_model.py: pending
+  test_nn_utils.py: pending
+  test_optimizer.py: pending
+  test_data.py: pending
+  test_serialization.py: pending
+
+session_log:
+  - date: "2026-07-17"
+    note: "Created progress tracker; starting guided walkthrough from A1 overview + Unicode"
+  - date: "2026-07-17"
+    note: "Local AGENTS.md switched to implementation-assisted; unicode concepts done; next = BPE"
+  - date: "2026-07-17"
+    note: "Mode B + maintainable quality agreed; BPE train+Tokenizer green (test_train_bpe, test_tokenizer)"
+  - date: "2026-07-17"
+    note: "Owner feedback: need real tech decisions + know-how, not rubber-stamp mode. Switched to mode_B_participatory."
+  - date: "2026-07-17"
+    note: "Refined: not forced decision menus—learning phase; teach from situation; decide only when needed. collab=learning_first."
+  - date: "2026-07-17"
+    note: "Owner asked to redo BPE section as learning pass (not continue to model)."
