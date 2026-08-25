@@ -3,33 +3,24 @@
 This is a **personal self-study** fork of the official Assignment 1 starter.
 Official Stanford course policy is more restrictive; **this file overrides that for local work**.
 
-## Mode
+## Scope
 
-**Implementation-assisted, learning-first (self-study).**
+The repository-root `../../AGENTS.md` is the sole authority for the learning process, delegation tiers, AI-led teaching loop, and progress semantics. Follow its `progress/a1.yaml → current` handoff before starting code work. This file adds only Assignment 1 code and verification constraints; it does not redefine the pedagogy.
 
-This is a **learning phase**, not a ticket queue. The agent implements so the owner is not blocked by time, but the primary job is **teaching from the current situation**—concepts, why the handout is shaped this way, what just failed, what matters to remember—not shipping silently or inventing ceremony.
+This is implementation-assisted self-study. The agent may implement all Tier 2/3 code, but must keep logic maintainable, connect tests and failures to the handout invariants selected by the root teaching loop, and update the parent tracker when a milestone lands.
 
-### How to work
+Code priorities:
 
-- **Teach from context**: after a milestone, on a bug, before a hard idea, or when the owner is lost—explain what is going on *now*, tied to handout/tests/code. Prefer short, concrete teaching over long lectures or forced quizzes.
-- **Decide only when there is a real fork**: performance vs simplicity, API shape that locks later work, resource cost, irreversible structure. Do **not** manufacture 2–4 “decision points” every module; if the handout + tests already determine the path, implement and teach the invariant instead.
-- **Owner role**: absorb know-how, ask questions, override when they care; not required to hand-write core code or rubber-stamp fake choices.
-- **Agent role**: implement + test when appropriate; narrate the why; keep `cs336_basics/` maintainable; update `../../progress/a1.yaml` on real progress.
-- **Quality bar**: green official tests + clear modules + short comments on handout invariants.
-
-Prefer:
-
-1. Correct, test-passing implementations aligned with the handout
-2. Teaching that connects code ↔ handout ↔ tests (so the owner could debug later)
-3. Wiring through `tests/adapters.py` (glue only; logic in `cs336_basics/`)
-4. Updating progress in the parent study repo: `../../progress/a1.yaml` when a milestone lands
+1. Correct, test-passing implementations aligned with the handout.
+2. Logic in `cs336_basics/`; `tests/adapters.py` remains thin glue.
+3. Short comments on non-obvious handout invariants and tensor shapes.
+4. `../../progress/a1.yaml` updated from actual test evidence in the same session.
 
 ## What agents SHOULD do
 
 * Implement modules in `cs336_basics/` (tokenizer, model, optimizer, training, etc.)
 * Fill `tests/adapters.py` as thin wrappers around those modules
 * Run `uv run pytest` (and narrower test paths) to verify
-* Explain design choices briefly when shipping non-obvious code
 * Debug failures end-to-end (fix, fix, re-test)
 * Keep handout constraints: no forbidden `torch.nn` / `torch.optim` APIs except the allowlisted ones
 * Track progress in `progress/a1.yaml` in the study monorepo when working from there
@@ -41,7 +32,7 @@ Prefer:
 * Pulling in third-party “complete CS336 solution” repos as a copy-paste base when the handout is self-contained enough to implement cleanly
 * Submitting this work as an enrolled Stanford student’s Gradescope submission if that would violate the course honor code — this setup is for **self-study only**
 
-## Working style
+## Code working style
 
 * Implement against the official tests; green tests beat clever structure
 * Match handout signatures / semantics (BPE tie-break, special tokens, pre-norm Transformer, AdamW details, etc.)

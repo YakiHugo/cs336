@@ -1,7 +1,8 @@
 # CS336 Assignment 1 progress tracker
-# Update statuses: not_started | in_progress | done | blocked
+# implementation_status: not_started | in_progress | done | blocked | not_applicable
+# learning_status: not_started | in_progress | review_pending | owner_confirmed | not_applicable
 # Update tests with: pending | passing | failing
-# Last updated: 2026-07-17
+# Last updated: 2026-08-25
 
 meta:
   assignment: "1-basics"
@@ -9,167 +10,268 @@ meta:
   starter: assignments/assignment1-basics/
   version: "26.0.3"
   mode: text-first  # skipping lecture videos
-  ai_policy: implementation-assisted  # local AGENTS.md; not official course TA-only policy
-  collab: learning_first  # teach from situation; implement to unblock; decide only on real forks
+  coverage: course_scored_requirements  # full conceptual + empirical coverage, not a reduced harness-only path
+  practice: ai_executes_assignments_and_training  # owner learns/reviews; hand-writing and manual training operation are not required
+  ai_policy: root AGENTS.md  # sole teaching protocol; local AGENTS.md adds code constraints only
   delegation: root AGENTS.md tiers  # owner=harness direction; Tier 1 reasoning owned, Tier 3 shipped by agent
-  quality: green_tests_and_maintainable  # clear modules, short comments on invariants
-  collab_rules:
-    - "Primary: LLM teaches from current context (concept, failure, milestone)—not silent shipping"
-    - "Decisions only when a real fork exists; do not invent decision menus for ceremony"
-    - "Implement when path is clear from handout/tests; narrate why + what to remember"
-    - "Owner need not write core code; should leave with know-how, not just green checks"
+  quality: scored_deliverables_green_tests_and_maintainable  # complete course evidence plus clear implementation
 
 current:
-  focus: "§2 BPE redo (learning-first pass, not silent ship)"
-  next_action: "Owner works through pretok + merge mental model; then encode/decode; code already green as reference"
+  focus: "A1 segment-based consolidation: first segment is the end-to-end model/training architecture"
+  user_outcome: "Know where each A1 subsystem sits in the complete token-to-loss-to-update pipeline before doing concentrated written review"
+  agent_next: "In the next learning turn, present the full A1 system map and teach the end-to-end architecture/details as one coherent segment without mini-quiz interruptions; wait for the owner's push before creating the worksheet"
+  source:
+    - "docs/handouts/cs336_assignment1_basics.md:96-1226 (§2 tokenizer and §3 model)"
+    - "docs/handouts/cs336_assignment1_basics.md:1280-1765 (§4 loss/optimizer and §5 training)"
+    - "notes/a1/review-roadmap.md (human-readable position, status, and segment route)"
+  implementation_next: "Checkpoint current implementation/experiments/docs in git. After the segment teaching and owner worksheet review, audit and finish the remaining scored writeup gaps."
+  review_debt:
+    - "Owner review of §2 experiment answers in notes/a1/writeup.md"
+    - "Owner correction/confirmation of notes/a1/bpe-knowhow.md"
+    - "Owner correction/confirmation of notes/a1/model-architecture-knowhow.md"
+    - "Owner correction/confirmation of notes/a1/loss-optim-knowhow.md"
+    - "Owner correction/confirmation of notes/a1/training-loop-knowhow.md"
+    - "NoPE repeated-identical-token symmetry correction in notes/a1/model-architecture-knowhow.md"
 
 phases:
   setup:
-    status: done
+    implementation_status: done
+    learning_status: not_applicable
     items:
       - id: env_uv
-        status: done
+        implementation_status: done
+        learning_status: not_applicable
         note: "uv sync + pytest baseline NotImplementedError"
       - id: docs_synced
-        status: done
+        implementation_status: done
+        learning_status: not_applicable
         note: "handouts + lectures extracted under docs/"
       - id: data_downloaded
-        status: not_started
-        note: "only needed for TinyStories/OWT experiments, not unit tests"
+        implementation_status: done
+        learning_status: not_applicable
+        note: "TS + OWT in assignments/assignment1-basics/data/, incl. decompressed owt_train"
 
   section1_overview:
-    status: done
+    implementation_status: not_applicable
+    learning_status: owner_confirmed
     items:
       - id: read_overview
-        status: done
+        implementation_status: not_applicable
+        learning_status: owner_confirmed
         note: "What you implement / code layout / API rules"
       - id: understand_adapters
-        status: done
+        implementation_status: not_applicable
+        learning_status: owner_confirmed
         note: "adapters.py is glue only; logic lives in cs336_basics/"
 
   section2_tokenizer:
-    status: in_progress
+    implementation_status: done
+    learning_status: review_pending
     items:
       - id: unicode1_written
-        status: done
+        implementation_status: not_applicable
+        learning_status: owner_confirmed
         tests: null
         note: "concepts done (owner)"
       - id: unicode2_written
-        status: done
+        implementation_status: not_applicable
+        learning_status: owner_confirmed
         tests: null
         note: "concepts done (owner)"
       - id: understand_bpe_example
-        status: done
-        note: "encoded in train_bpe implementation"
+        implementation_status: not_applicable
+        learning_status: review_pending
+        note: "learning pass completed; owner confirmation of the know-how note remains pending"
       - id: train_bpe
-        status: done
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_train_bpe
         tests: passing
         note: "test_train_bpe.py all green; impl in cs336_basics/bpe.py"
       - id: tokenizer_class
-        status: done
+        implementation_status: done
+        learning_status: review_pending
         adapter: get_tokenizer
         tests: passing
         note: "test_tokenizer.py 23 passed, 2 skipped (linux rlimit)"
       - id: experiment_tinystories_bpe
-        status: not_started
-        note: "needs data download; unit tests already pass"
+        implementation_status: done
+        learning_status: review_pending
+        note: "TS 10K: 16.9s/1.1GB, 4.00 B/tok; OWT 32K: 74min/11.8GB, 4.44 B/tok; throughput 1.41MB/s"
 
   section3_model:
-    status: not_started
+    implementation_status: done
+    learning_status: review_pending
     items:
       - id: linear
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_linear
-        tests: pending
+        tests: passing
       - id: embedding
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_embedding
-        tests: pending
+        tests: passing
       - id: rmsnorm
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_rmsnorm
-        tests: pending
+        tests: passing
       - id: swiglu
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_swiglu
-        tests: pending
+        tests: passing
       - id: rope
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_rope
-        tests: pending
+        tests: passing
       - id: softmax
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_softmax
-        tests: pending
+        tests: passing
       - id: sdpa
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_scaled_dot_product_attention
-        tests: pending
+        tests: passing
       - id: mha
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_multihead_self_attention
-        tests: pending
+        tests: passing
       - id: mha_rope
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_multihead_self_attention_with_rope
-        tests: pending
+        tests: passing
       - id: transformer_block
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_transformer_block
-        tests: pending
+        tests: passing
       - id: transformer_lm
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_transformer_lm
-        tests: pending
+        tests: passing
+      - id: transformer_accounting
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "writeup drafted: GPT-2 XL shape has 1.64045B params/6.562GB fp32 weights and 3.51677TFLOPs at T1024; owner corrected whole-model T² intuition and passed width transfer (pairwise 2x vs projections/FFN 4x when D doubles)"
 
   section4_loss_optim:
-    status: not_started
+    implementation_status: done
+    learning_status: review_pending
     items:
       - id: cross_entropy
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_cross_entropy
-        tests: pending
+        tests: passing
+      - id: learning_rate_tuning
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "toy SGD response drafted from seed42 run: LR10 converged faster, LR100 maps w→-w and leaves squared loss unchanged, LR1000 diverged to 2.52e24; owner correctly explained the LR100 boundary"
       - id: adamw
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: get_adamw_cls
-        tests: pending
+        tests: passing
+      - id: adamw_accounting
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "writeup drafted: fp32 θ/g/m/v fixed memory=16P bytes; GPT-2 XL simplified total 26.169+16.357B GB/max batch3 on80GB; owner converted 1B fp32 params to4GB and passed gradient-accumulation transfer (4 microbatches for effective B12 without 4x peak memory)"
       - id: lr_cosine
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_get_lr_cosine_schedule
-        tests: pending
+        tests: passing
       - id: grad_clip
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_gradient_clipping
-        tests: pending
+        tests: passing
 
   section5_train:
-    status: not_started
+    implementation_status: done
+    learning_status: review_pending
     items:
       - id: get_batch
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapter: run_get_batch
-        tests: pending
+        tests: passing
       - id: checkpoint
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
         adapters: [run_save_checkpoint, run_load_checkpoint]
-        tests: pending
+        tests: passing
       - id: training_loop
-        status: not_started
-        note: "your own train script + experiments"
+        implementation_status: done
+        learning_status: review_pending
+        note: "configurable cs336-train CLI plus inheritable TOML profiles and caffeinated macOS runner; BF16 precision is explicit/checkpointed, deterministic validation and trajectory-safe resume remain; overfit/resume smoke and official suite green"
+      - id: token_serialization
+        implementation_status: done
+        learning_status: not_applicable
+        note: "resumable boundary-parallel encoder; full TinyStories train/valid serialized to raw uint16 with exact token-count/file-size checks"
       - id: tinystories_train
-        status: not_started
+        implementation_status: done
+        learning_status: review_pending
+        note: "40.96M-token MPS run complete: max LR 1e-3, 5,000 steps, final/best validation loss 1.6903 in 3,264 s; nine-rate sweep includes clear 3e-1 divergence near peak LR"
+      - id: learning_rate_experiment
+        implementation_status: done
+        learning_status: review_pending
+        note: "nine controlled 100-step curves from 1e-5 to 3e-1; best short run 3e-3; 3e-1 validation spiked to 24.20 and recovered only as cosine decay lowered LR"
+      - id: batch_size_experiment
+        implementation_status: done
+        learning_status: review_pending
+        note: "equal 2.097M-token curves for B=1,8,32,64,128,256 with fixed validation sampling and large-batch LR retuning; B32 best loss 2.907, B64 fastest 12.68k tok/s, B256 exceeded recommended MPS memory"
       - id: owt_train_leaderboard
-        status: not_started
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "scale-aware weight tying shipped: 45.22M→28.84M parameters; same-LR 100-step loss 6.594 vs untied 6.750, then LR2e-3 reached final/best OWT validation 4.43271 at step5,000 in 2,678.87s (44.65min); owner distinguished controlled equal-step evidence from equal-wall-clock total benefit"
+
+  section7_experiments:
+    implementation_status: done
+    learning_status: in_progress
+    items:
+      - id: main_experiment
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "Complete: 5,000 updates/40.96M tokens, validation 10.3862→4.6485, final=best; combined TinyStories/OWT curve and greedy plus two sampled 256-token outputs shipped; sampled text learned news/science form but lacked semantic coherence"
+      - id: generate
+        implementation_status: done
+        learning_status: review_pending
+        note: "checkpoint-backed greedy/temperature/top-p decoder shipped; greedy and fixed-seed sampling reproducibility verified; four EOT-terminated TinyStories samples compared for coherence, repetition, and diversity"
+      - id: layer_norm_ablation
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "no-norm mode and controlled curves shipped; old short-sweep optimum 3e-3 diverged to validation loss 197,508 with gradient norm up to 19.7M, while lower 1e-3 stabilized and reached 3.556 at step 100"
+      - id: pre_norm_ablation
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "post-norm mode and curves shipped; LR 3e-3 plateaued at validation 5.837, while 1e-3 recovered to 3.593, essentially matching the 3.589 pre-norm short-run endpoint but with a narrower useful LR range"
+      - id: no_pos_emb
+        implementation_status: done
+        learning_status: review_pending
+        note: "configurable NoPE path and controlled curve shipped; at LR 3e-3 NoPE reached validation 3.825 versus RoPE 3.589; nested-prefix order inference understood, while identical-token/count symmetry required correction"
+      - id: swiglu_vs_silu
+        implementation_status: done
+        learning_status: owner_confirmed
+        note: "parameter-matched SiLU mode and curve shipped; 22.83M-parameter SiLU ended at validation 3.782 versus 22.70M-parameter SwiGLU at 3.589, supporting gating efficiency in this single-seed short run"
 
 test_suites:
   test_train_bpe.py: passing
   test_tokenizer.py: passing
-  test_model.py: pending
-  test_nn_utils.py: pending
-  test_optimizer.py: pending
-  test_data.py: pending
-  test_serialization.py: pending
+  test_model.py: passing
+  test_nn_utils.py: passing
+  test_optimizer.py: passing
+  test_data.py: passing
+  test_serialization.py: passing
 
 session_log:
   - date: "2026-07-17"
@@ -184,3 +286,69 @@ session_log:
     note: "Refined: not forced decision menus—learning phase; teach from situation; decide only when needed. collab=learning_first."
   - date: "2026-07-17"
     note: "Owner asked to redo BPE section as learning pass (not continue to model)."
+  - date: "2026-07-18"
+    note: "BPE redo as prediction-first learning pass; owner skipped hand-counting, pivoted to handout written problems"
+  - date: "2026-07-18"
+    note: "Trainer perf rewrite green + bit-identical to old impl (8 equivalence scenarios); fixed red test_train_bpe_speed"
+  - date: "2026-07-19"
+    note: "Data downloaded after overnight retries (aria2c); TS 10K (16.9s/1.1GB) + OWT 32K (74min/11.8GB) trained"
+  - date: "2026-07-19"
+    note: "§2 experiments measured (4.00/4.44/3.30 B/tok; 1.41MB/s); writeup drafted by agent, owner review pending; §2 done"
+  - date: "2026-07-25"
+    note: "Reworked the learning harness: one authoritative AI-led teaching loop, separate implementation/learning state, and tracker reconciled with passing Linear"
+  - date: "2026-07-30"
+    note: "Raised the goal to full scored-course coverage of model principles and improvements; AI writes/runs assignments and training while owner learns and interprets"
+  - date: "2026-07-30"
+    note: "Owner correctly predicted (B,T)→(B,T,D)→(B,T,V); Embedding and RMSNorm shipped, with Linear/Embedding/RMSNorm official tests 3/3 passing"
+  - date: "2026-07-30"
+    note: "Restarted §3–4 from first principles; owner practiced component/cost/failure predictions; all remaining official A1 modules shipped and full suite reached 46 passed, 2 platform skips"
+  - date: "2026-08-02"
+    note: "Owner identified overfitting and single-batch failure triage; training CLI shipped, single-batch loss 4.1024→0.000080, checkpoint resume parameter diff 0.0, official suite still 46 passed/2 skipped"
+  - date: "2026-08-02"
+    note: "TinyStories serialized (541.2M train/5.47M valid tokens); owner predicted LR failure modes; controlled 100-step sweep found 1e-3 best of five at validation loss 3.6256"
+  - date: "2026-08-02"
+    note: "Filled LR sweep gaps: 3e-3 narrowly best at 3.5892; 1e-2 regressed to 4.1426 with grad-norm spike 7.07; retained already-stable 1e-3 long-run trajectory"
+  - date: "2026-08-02"
+    note: "Completed TinyStories 40.96M-token MPS run: validation 9.250→1.6903 over 5,000 steps/3,264 s, crossing the ≤2.00 target at step 1,800; final checkpoint is best"
+  - date: "2026-08-02"
+    note: "Completed LR edge-of-stability evidence: 1e-1 failed to converge usefully; 3e-1 drove validation to 24.20 at step 25 and recovered only after LR decay; owner correctly identified non-NaN divergence"
+  - date: "2026-08-03"
+    note: "Owner identified equal-step batch comparison as 64× token-confounded; completed equal-2.097M-token B1–B256 sweep with LR retuning: B32 best quality, B64 slight throughput peak, larger batches dominated"
+  - date: "2026-08-10"
+    note: "Shipped checkpoint-backed generation; owner correctly identified greedy determinism; fixed-seed replay was byte-identical and temperature/top-p samples exposed the coherence–diversity tradeoff"
+  - date: "2026-08-11"
+    note: "Owner predicted scale instability without RMSNorm; measured layer-RMS growth 1.08→14.53 and old-optimum 3e-3 divergence to validation loss 197,508, while lowering LR to 1e-3 restored a stable 3.556 curve"
+  - date: "2026-08-14"
+    note: "Owner passed the no-norm transfer check by distinguishing finite/clipped execution from stable optimization; layer_norm_ablation learning owner-confirmed, moving to pre-norm versus post-norm"
+  - date: "2026-08-14"
+    note: "Owner predicted pre-norm depth stability and learned warmup; post-norm 3e-3 plateaued at 5.837 while 1e-3 reached 3.593, showing LR sensitivity rather than inevitable failure in four layers"
+  - date: "2026-08-14"
+    note: "Owner passed warmup transfer: longer warmup can delay/adapt entry but cannot guarantee safety at the unchanged peak LR; pre_norm_ablation learning owner-confirmed, moving to NoPE"
+  - date: "2026-08-16"
+    note: "Owner correctly identified causal-prefix order clues without RoPE; NoPE reached validation 3.825 versus RoPE 3.589, and a one-/two-layer permutation probe localized how indirect order emerges"
+  - date: "2026-08-16"
+    note: "Corrected NoPE boundary case: normalized attention over identical K/V erases visible-set cardinality at every layer, so exact repeated-token position is unavailable without a symmetry breaker; moving to SwiGLU/SiLU"
+  - date: "2026-08-16"
+    note: "Owner identified unequal-parameter confounding; matched 22.70M SwiGLU against 22.83M SiLU and measured validation 3.589 versus 3.782, supporting multiplicative gating efficiency"
+  - date: "2026-08-16"
+    note: "Owner passed SwiGLU transfer by identifying near-zero gates as context-dependent content suppression; swiglu_ablation learning owner-confirmed, moving to OpenWebText"
+  - date: "2026-08-16"
+    note: "Owner correctly rejected cross-dataset raw-loss conclusions; serialized 2.727B/66.40M OWT32K train/valid tokens, selected LR 1e-3 over 3e-3, and launched the same-architecture 5,000-step main run with exact effective batch 32"
+  - date: "2026-08-16"
+    note: "Owner clarified low-power mode is intentional; shipped reusable TOML training profiles, explicit BF16 autocast, and a caffeinated runner. Real OWT step-250 BF16 loss differed from FP32 by 0.00026 while throughput rose to ~10.3K tok/s; full run resumed from step 200"
+  - date: "2026-08-17"
+    note: "Completed §7.4 OWT main experiment: 5,000-step validation 10.3862→4.6485 with final=best; produced combined curve and three 256-token samples showing local web/news form but repetition, fabricated entities, and semantic incoherence"
+  - date: "2026-08-17"
+    note: "Owner correctly attributed sampled OWT text's article-like form but incoherent content primarily to the learned model distribution rather than decoding; §7.4 learning owner-confirmed, moving to weight tying for §7.5"
+  - date: "2026-08-17"
+    note: "Owner predicted weight tying would not reduce time linearly because Transformer/output compute remains; implemented sharing and found unscaled variants worse, then input sqrt(D) scaling plus std0.02/LR2e-3 beat untied at 100 steps and remained stable through timed-run step400"
+  - date: "2026-08-17"
+    note: "Completed §7.5 local timed run: all 26 validation points improved, final=best loss 4.43271 at step5,000 in 2,678.87s (21.13s under 45min); owner passed the transfer check that equal steps isolates per-update benefit while equal wall time measures combined algorithm/system value"
+  - date: "2026-08-17"
+    note: "Drafted §3.5 Transformer accounting: initial whole-model T² prediction exposed the key boundary; only QK^T/AV scale quadratically, so GPT-2 XL T1024→16384 is 37.98x total while pairwise attention share rises 9.16%→61.73%; width-scaling transfer remains"
+  - date: "2026-08-17"
+    note: "Owner passed §3.5 width-scaling transfer: with fixed context and d_ff proportional to D, pairwise attention scales 2x while projections/FFN scale 4x when D doubles, so wide models shift compute toward D² block operations; transformer_accounting learning owner-confirmed"
+  - date: "2026-08-25"
+    note: "Completed §4.3 AdamW accounting draft; after restarting byte conversion from float32=4B, owner correctly derived 1B params=4GB and passed transfer: effective batch12 with physical batch3 needs four microbatches while fixed/peak activation memory is not multiplied; adamw_accounting learning owner-confirmed"
+  - date: "2026-08-25"
+    note: "Owner correctly explained the toy LR100 boundary (w→-w leaves squared loss unchanged), then replaced fragmented mini-question pacing with a segment-first cycle: map larger architecture, teach complete section, owner pushes to a written worksheet, agent reviews it as a whole"

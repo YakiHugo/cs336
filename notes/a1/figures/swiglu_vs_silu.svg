@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="480.0" y="30" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="600">SwiGLU versus SiLU: validation loss</text>
+<line x1="86.0" y1="120" x2="86.0" y2="528" stroke="#e5e7eb"/>
+<text x="86.0" y="553" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#374151">0</text>
+<line x1="254.8" y1="120" x2="254.8" y2="528" stroke="#e5e7eb"/>
+<text x="254.8" y="553" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#374151">20</text>
+<line x1="423.6" y1="120" x2="423.6" y2="528" stroke="#e5e7eb"/>
+<text x="423.6" y="553" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#374151">40</text>
+<line x1="592.4" y1="120" x2="592.4" y2="528" stroke="#e5e7eb"/>
+<text x="592.4" y="553" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#374151">60</text>
+<line x1="761.2" y1="120" x2="761.2" y2="528" stroke="#e5e7eb"/>
+<text x="761.2" y="553" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#374151">80</text>
+<line x1="930.0" y1="120" x2="930.0" y2="528" stroke="#e5e7eb"/>
+<text x="930.0" y="553" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#374151">100</text>
+<line x1="86" y1="120.0" x2="930" y2="120.0" stroke="#e5e7eb"/>
+<text x="74" y="124.0" text-anchor="end" font-family="sans-serif" font-size="13" fill="#374151">9.7</text>
+<line x1="86" y1="201.6" x2="930" y2="201.6" stroke="#e5e7eb"/>
+<text x="74" y="205.6" text-anchor="end" font-family="sans-serif" font-size="13" fill="#374151">8.4</text>
+<line x1="86" y1="283.2" x2="930" y2="283.2" stroke="#e5e7eb"/>
+<text x="74" y="287.2" text-anchor="end" font-family="sans-serif" font-size="13" fill="#374151">7.1</text>
+<line x1="86" y1="364.8" x2="930" y2="364.8" stroke="#e5e7eb"/>
+<text x="74" y="368.8" text-anchor="end" font-family="sans-serif" font-size="13" fill="#374151">5.8</text>
+<line x1="86" y1="446.4" x2="930" y2="446.4" stroke="#e5e7eb"/>
+<text x="74" y="450.4" text-anchor="end" font-family="sans-serif" font-size="13" fill="#374151">4.5</text>
+<line x1="86" y1="528.0" x2="930" y2="528.0" stroke="#e5e7eb"/>
+<text x="74" y="532.0" text-anchor="end" font-family="sans-serif" font-size="13" fill="#374151">3.1</text>
+<line x1="86" y1="528" x2="930" y2="528" stroke="#111827"/>
+<line x1="86" y1="120" x2="86" y2="528" stroke="#111827"/>
+<text x="508.0" y="580" text-anchor="middle" font-family="sans-serif" font-size="15">optimizer steps</text>
+<text transform="translate(22 324.0) rotate(-90)" text-anchor="middle" font-family="sans-serif" font-size="15">validation loss</text>
+<polyline points="86.0,149.4 297.0,433.0 508.0,473.7 719.0,491.6 930.0,499.9" fill="none" stroke="#2563eb" stroke-width="3"/>
+<circle cx="86.0" cy="149.4" r="4" fill="#2563eb"/>
+<circle cx="297.0" cy="433.0" r="4" fill="#2563eb"/>
+<circle cx="508.0" cy="473.7" r="4" fill="#2563eb"/>
+<circle cx="719.0" cy="491.6" r="4" fill="#2563eb"/>
+<circle cx="930.0" cy="499.9" r="4" fill="#2563eb"/>
+<line x1="86" y1="66" x2="112" y2="66" stroke="#2563eb" stroke-width="3"/>
+<text x="120" y="71" font-family="sans-serif" font-size="13">SwiGLU (22.70M), LR 3e-3</text>
+<polyline points="86.0,148.1 297.0,412.5 508.0,459.1 719.0,478.7 930.0,487.9" fill="none" stroke="#dc2626" stroke-width="3"/>
+<circle cx="86.0" cy="148.1" r="4" fill="#dc2626"/>
+<circle cx="297.0" cy="412.5" r="4" fill="#dc2626"/>
+<circle cx="508.0" cy="459.1" r="4" fill="#dc2626"/>
+<circle cx="719.0" cy="478.7" r="4" fill="#dc2626"/>
+<circle cx="930.0" cy="487.9" r="4" fill="#dc2626"/>
+<line x1="496" y1="66" x2="522" y2="66" stroke="#dc2626" stroke-width="3"/>
+<text x="530" y="71" font-family="sans-serif" font-size="13">SiLU (22.83M), LR 3e-3</text>
+</svg>

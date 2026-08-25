@@ -1,0 +1,71 @@
+# Reusable A1 training profiles for this 48 GB M5 Pro.
+# CLI flags override these values, so experiments only spell out the variable under test.
+
+[profiles.mps_common]
+device = "mps"
+precision = "bfloat16"
+context_length = 256
+d_model = 512
+num_layers = 4
+num_heads = 16
+d_ff = 1344
+rope_theta = 10000.0
+normalization = "pre"
+positional_encoding = "rope"
+feed_forward = "swiglu"
+max_steps = 5000
+max_learning_rate = 1e-3
+min_learning_rate = 1e-4
+warmup_steps = 200
+cosine_cycle_steps = 5000
+beta1 = 0.9
+beta2 = 0.95
+epsilon = 1e-8
+weight_decay = 0.1
+max_grad_norm = 1.0
+log_interval = 25
+eval_interval = 200
+eval_batches = 20
+checkpoint_interval = 500
+seed = 42
+
+[profiles.mps_tinystories_full]
+extends = "mps_common"
+train_data = "data/ts10k_train.bin"
+validation_data = "data/ts10k_valid.bin"
+output_dir = "runs/ts_full_profile"
+vocab_size = 10000
+batch_size = 32
+gradient_accumulation_steps = 1
+eval_batch_size = 32
+
+[profiles.mps_owt_full]
+extends = "mps_common"
+train_data = "data/owt32k_train.bin"
+validation_data = "data/owt32k_valid.bin"
+output_dir = "runs/owt_full_profile"
+vocab_size = 32000
+batch_size = 16
+gradient_accumulation_steps = 2
+loss_chunk_size = 1024
+eval_batch_size = 8
+
+[profiles.mps_owt_sweep]
+extends = "mps_owt_full"
+output_dir = "runs/owt_sweep_profile"
+max_steps = 100
+warmup_steps = 10
+cosine_cycle_steps = 100
+log_interval = 10
+eval_interval = 25
+eval_batches = 4
+checkpoint_interval = 100
+
+[profiles.mps_owt_leaderboard_tied]
+extends = "mps_owt_full"
+output_dir = "runs/owt_leaderboard_tied"
+tie_embeddings = true
+tied_embedding_std = 0.02
+embedding_scale = 22.627416997969522
+max_learning_rate = 2e-3
+min_learning_rate = 2e-4

@@ -6,17 +6,27 @@ Handout invariants (Assignment 1 §2):
 - Special tokens are hard split boundaries during training (excluded from pair counts).
 - On pair-count ties, merge the lexicographically greater pair (`max` on bytes tuples).
 - Encode applies merges in creation order (rank); decode uses UTF-8 with errors='replace'.
+
+Performance notes (same semantics, scaled to multi-GB corpora):
+- Pre-token counting runs in parallel over special-token-aligned byte ranges
+  (`find_chunk_boundaries` + a spawn-context process pool) for large files.
+- The merge loop keeps pair counts incrementally (pair -> containing-words
+  index) instead of recounting every pair after every merge, and picks the
+  best pair from a lazy heap whose order matches `max` on (count, pair).
 """
 
 from __future__ import annotations
 
+import heapq
 import json
+import multiprocessing
 import os
-from collections import Counter, defaultdict
+from collections import Counter
 from collections.abc import Iterable, Iterator
-from typing import BinaryIO
 
 import regex as re
+
+from .pretokenization_example import find_chunk_boundaries
 
 # GPT-2 pretokenizer (tiktoken PR form from the handout).
 PRETOKEN_PATTERN = re.compile(
@@ -27,15 +37,21 @@ PRETOKEN_PATTERN = re.compile(
 Word = tuple[bytes, ...]
 Pair = tuple[bytes, bytes]
 
+# Shared one-byte token objects: words are tuples of these singletons, which
+# avoids a `bytes([b])` allocation per byte and keeps word hashing cheap.
+_BYTE_TOKENS: tuple[bytes, ...] = tuple(bytes([i]) for i in range(256))
 
-def _bytes_to_word(token: str) -> Word:
-    raw = token.encode("utf-8")
-    return tuple(bytes([b]) for b in raw)
+# Below this per-worker slice size, process-pool overhead is not worth it.
+_PARALLEL_MIN_CHUNK_BYTES = 4 * 1024 * 1024
 
 
-def _count_pretokens(text: str, special_tokens: list[str]) -> Counter[Word]:
-    """Count pre-token frequency; specials split the corpus and are not counted."""
-    counts: Counter[Word] = Counter()
+def _count_pretokens(text: str, special_tokens: list[str]) -> Counter[str]:
+    """Count pre-token frequency; specials split the corpus and are not counted.
+
+    Keyed by the raw pre-token string (converted to `Word` once afterwards).
+    `findall` and `Counter.update` both loop in C, which matters at GB scale.
+    """
+    counts: Counter[str] = Counter()
     if special_tokens:
         # Longer specials first so overlapping delimiters split correctly if ever needed.
         delim = "|".join(re.escape(st) for st in sorted(special_tokens, key=len, reverse=True))
@@ -46,19 +62,92 @@ def _count_pretokens(text: str, special_tokens: list[str]) -> Counter[Word]:
     for chunk in chunks:
         if not chunk:
             continue
-        for match in PRETOKEN_PATTERN.finditer(chunk):
-            counts[_bytes_to_word(match.group(0))] += 1
+        counts.update(PRETOKEN_PATTERN.findall(chunk))
     return counts
 
 
-def _count_pairs(word_freqs: dict[Word, int]) -> Counter[Pair]:
-    pair_counts: Counter[Pair] = Counter()
+def _count_pretokens_chunk(args: tuple[str, int, int, list[str]]) -> Counter[str]:
+    """Worker: count pre-tokens in the byte range [start, end) of the corpus.
+
+    Top-level function with picklable args/return so the spawn start method
+    (macOS default) can run it; importing this module never spawns processes.
+    """
+    input_path, start, end, special_tokens = args
+    with open(input_path, "rb") as f:
+        f.seek(start)
+        raw = f.read(end - start)
+    text = raw.decode("utf-8")
+    # Mirror the universal-newline translation of the old single text-mode read.
+    # Boundaries sit at special-token starts (pure ASCII), so a "\r\n" pair is
+    # never split across chunks unless a special token itself starts with "\n".
+    if "\r" in text:
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
+    return _count_pretokens(text, special_tokens)
+
+
+def _count_pretokens_file(
+    input_path: str | os.PathLike, special_tokens: list[str]
+) -> Counter[str]:
+    """Count pre-tokens, parallel over special-token-aligned chunks when worthwhile."""
+    file_size = os.path.getsize(input_path)
+    num_workers = min(os.cpu_count() or 4, file_size // _PARALLEL_MIN_CHUNK_BYTES + 1)
+    if special_tokens and num_workers >= 2:
+        with open(input_path, "rb") as f:
+            boundaries = find_chunk_boundaries(f, num_workers, special_tokens[0].encode("utf-8"))
+        ranges = list(zip(boundaries[:-1], boundaries[1:]))
+        if len(ranges) >= 2:
+            # Every boundary is a special-token start, so splitting each chunk
+            # on the same specials partitions the corpus exactly. Merging the
+            # per-chunk Counters is additive, hence deterministic.
+            tasks = [(str(input_path), start, end, special_tokens) for start, end in ranges]
+            counts: Counter[str] = Counter()
+            with multiprocessing.get_context("spawn").Pool(processes=len(tasks)) as pool:
+                for partial in pool.imap(_count_pretokens_chunk, tasks):
+                    counts.update(partial)
+            return counts
+
+    with open(input_path, encoding="utf-8") as f:
+        return _count_pretokens(f.read(), special_tokens)
+
+
+def _words_from_counts(counts: Counter[str]) -> dict[Word, int]:
+    """Convert counted pre-token strings to single-byte-tuple words."""
+    return {
+        tuple(_BYTE_TOKENS[b] for b in token.encode("utf-8")): freq
+        for token, freq in counts.items()
+    }
+
+
+def _index_pairs(word_freqs: dict[Word, int]) -> tuple[dict[Pair, int], dict[Pair, set[Word]]]:
+    """One-pass build of pair counts plus the pair -> containing-words index."""
+    pair_counts: dict[Pair, int] = {}
+    pair_words: dict[Pair, set[Word]] = {}
     for word, freq in word_freqs.items():
-        if len(word) < 2:
-            continue
         for i in range(len(word) - 1):
-            pair_counts[(word[i], word[i + 1])] += freq
-    return pair_counts
+            pair = (word[i], word[i + 1])
+            pair_counts[pair] = pair_counts.get(pair, 0) + freq
+            words = pair_words.get(pair)
+            if words is None:
+                pair_words[pair] = {word}
+            else:
+                words.add(word)
+    return pair_counts, pair_words
+
+
+class _ReversePairOrder:
+    """Invert pair ordering so a min-heap yields the lexicographically GREATEST
+    pair among equal counts, matching `max(counts, key=(count, pair))` exactly."""
+
+    __slots__ = ("pair",)
+
+    def __init__(self, pair: Pair) -> None:
+        self.pair = pair
+
+    def __lt__(self, other: _ReversePairOrder) -> bool:
+        return self.pair > other.pair
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, _ReversePairOrder) and self.pair == other.pair
 
 
 def _merge_word(word: Word, pair: Pair, new_token: bytes) -> Word:
@@ -96,10 +185,7 @@ def train_bpe(
             f"vocab_size={vocab_size} too small for 256 bytes + {len(special_tokens)} specials"
         )
 
-    with open(input_path, encoding="utf-8") as f:
-        text = f.read()
-
-    word_freqs: dict[Word, int] = dict(_count_pretokens(text, special_tokens))
+    word_freqs = _words_from_counts(_count_pretokens_file(input_path, special_tokens))
 
     # Vocab layout: 256 base bytes, then specials, then learned merges.
     vocab: dict[int, bytes] = {i: bytes([i]) for i in range(256)}
@@ -110,14 +196,29 @@ def train_bpe(
 
     merges: list[Pair] = []
     num_merges = vocab_size - len(vocab)
-    pair_counts = _count_pairs(word_freqs)
+    pair_counts, pair_words = _index_pairs(word_freqs)
+
+    # Lazy max-heap over (count, pair): entries go stale as counts change and
+    # are skipped on inspection. The pop order equals `max` on (count, pair):
+    # highest count, ties broken by the lexicographically greater pair.
+    heap: list[tuple[int, _ReversePairOrder]] = [
+        (-count, _ReversePairOrder(pair)) for pair, count in pair_counts.items()
+    ]
+    heapq.heapify(heap)
 
     for _ in range(num_merges):
         if not pair_counts:
             break
-        # Highest frequency; tie-break with lexicographically greater pair.
-        best_pair = max(pair_counts.keys(), key=lambda p: (pair_counts[p], p))
-        if pair_counts[best_pair] <= 0:
+        # Drop stale heap entries until the top is a live (pair, count) maximum.
+        best_pair: Pair | None = None
+        while heap:
+            neg_count, rev = heap[0]
+            if pair_counts.get(rev.pair) == -neg_count:
+                best_pair = rev.pair
+                heapq.heappop(heap)
+                break
+            heapq.heappop(heap)
+        if best_pair is None or pair_counts[best_pair] <= 0:
             break
 
         new_token = best_pair[0] + best_pair[1]
@@ -125,15 +226,45 @@ def train_bpe(
         vocab[next_id] = new_token
         next_id += 1
 
-        # Apply merge to all words; recompute pair counts for affected words only.
-        # Full recount of pairs is simpler and still fast enough for the unit tests;
-        # we update word_freqs in place then rebuild pair_counts for correctness.
-        new_word_freqs: dict[Word, int] = {}
-        for word, freq in word_freqs.items():
+        # Incremental update: only words containing best_pair change, so only
+        # their old pairs lose counts and their merged forms gain counts.
+        merged_freqs: dict[Word, int] = {}
+        for word in pair_words.pop(best_pair):
+            freq = word_freqs.pop(word)
+            for i in range(len(word) - 1):
+                pair = (word[i], word[i + 1])
+                remaining = pair_counts[pair] - freq
+                if remaining == 0:
+                    del pair_counts[pair]
+                    pair_words.pop(pair, None)
+                else:
+                    pair_counts[pair] = remaining
+                    words = pair_words.get(pair)
+                    if words is not None:
+                        words.discard(word)
+                    heapq.heappush(heap, (-remaining, _ReversePairOrder(pair)))
             merged = _merge_word(word, best_pair, new_token)
-            new_word_freqs[merged] = new_word_freqs.get(merged, 0) + freq
-        word_freqs = new_word_freqs
-        pair_counts = _count_pairs(word_freqs)
+            merged_freqs[merged] = merged_freqs.get(merged, 0) + freq
+
+        for merged, freq in merged_freqs.items():
+            word_freqs[merged] = word_freqs.get(merged, 0) + freq
+            for i in range(len(merged) - 1):
+                pair = (merged[i], merged[i + 1])
+                count = pair_counts.get(pair, 0) + freq
+                pair_counts[pair] = count
+                words = pair_words.get(pair)
+                if words is None:
+                    pair_words[pair] = {merged}
+                else:
+                    words.add(merged)
+                heapq.heappush(heap, (-count, _ReversePairOrder(pair)))
+
+        # Compaction guard: stale entries would otherwise grow the heap without bound.
+        if len(heap) > 4 * len(pair_counts) + 1024:
+            heap = [
+                (-count, _ReversePairOrder(pair)) for pair, count in pair_counts.items()
+            ]
+            heapq.heapify(heap)
 
     return vocab, merges
 
