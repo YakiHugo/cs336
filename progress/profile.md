@@ -11,6 +11,9 @@ Slow-changing state about the owner. The agent reads this at session start (see 
 ## Constraints
 
 - Time-limited; text-first (no lecture videos).
+- Owner-facing teaching, worksheets, review prompts, and conclusions must be written in Chinese. Keep
+  English only where needed for code identifiers, standard technical terms, and exact source paths; do
+  not assume the owner can follow English instructional prose.
 - The M5 Pro laptop is intentionally kept in low-power mode; training infrastructure should optimize within that constraint rather than asking to change the power policy.
 - Delegation granularity per root `AGENTS.md`: implementation is the agent's job, Tier-1 reasoning is the owner's.
 - Meet the course's scored requirements, but do not require the owner to hand-write assignment code/answers or personally operate training. The agent executes and drafts; the owner learns and reviews the underlying reasoning and evidence.
@@ -44,3 +47,11 @@ Running log — agent appends with a date when something real surfaces; owner ca
   too fragmented. Future sessions should map the current segment in the larger architecture, teach
   its full structure/details first, then let the owner push to a coherent written worksheet that the
   agent reviews before advancing.
+- 2026-08-29: The owner does not want to transcribe answers for material they already understand.
+  Accept self-reported coverage as a reason to omit redundant writing, but do not treat it as independent
+  confirmation; concentrate durable review work only on explicitly identified gaps.
+- 2026-11-18: The owner reported forgetting much of A1, having never read the implementation, and
+  wanting to revisit the original principles. The code-first walkthrough felt tiring. Start with the
+  goal, the design motivation, and the problem each step solves. Pair a short Mermaid flowchart with
+  the explanation and bring in code when it helps explain a decision or verify a claim. Treat the
+  long-term delegation and review rules as open for discussion.

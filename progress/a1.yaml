@@ -2,7 +2,7 @@
 # implementation_status: not_started | in_progress | done | blocked | not_applicable
 # learning_status: not_started | in_progress | review_pending | owner_confirmed | not_applicable
 # Update tests with: pending | passing | failing
-# Last updated: 2026-08-25
+# Last updated: 2026-11-18
 
 meta:
   assignment: "1-basics"
@@ -17,15 +17,18 @@ meta:
   quality: scored_deliverables_green_tests_and_maintainable  # complete course evidence plus clear implementation
 
 current:
-  focus: "A1 segment-based consolidation: first segment is the end-to-end model/training architecture"
-  user_outcome: "Know where each A1 subsystem sits in the complete token-to-loss-to-update pipeline before doing concentrated written review"
-  agent_next: "In the next learning turn, present the full A1 system map and teach the end-to-end architecture/details as one coherent segment without mini-quiz interruptions; wait for the owner's push before creating the worksheet"
+  focus: "A1 轻量回顾，从下一 token 预测的目标理解训练流程"
+  user_outcome: "能用流程图和自己的话说明训练各环节的出发点、解决的问题和相互关系"
+  agent_next: "沿总图展开分词与构造训练样本。先讲这一步的目标、遇到的具体问题和设计理由，用一张简短 Mermaid 图对应文字；代码作为需要时的出处。等学习者主动推进到练习时再安排综合确认。"
   source:
-    - "docs/handouts/cs336_assignment1_basics.md:96-1226 (§2 tokenizer and §3 model)"
-    - "docs/handouts/cs336_assignment1_basics.md:1280-1765 (§4 loss/optimizer and §5 training)"
+    - "docs/handouts/cs336_assignment1_basics.md:198-374 (§2.3–2.5), :438-493 (§2.6), and :1563-1578 (§5.1)"
+    - "assignments/assignment1-basics/cs336_basics/bpe.py:332, encode_data.py:115, and training.py:24"
+    - "notes/a1/training-loop-knowhow.md (2026-11-18 code walkthrough and CPU probes)"
     - "notes/a1/review-roadmap.md (human-readable position, status, and segment route)"
-  implementation_next: "Checkpoint current implementation/experiments/docs in git. After the segment teaching and owner worksheet review, audit and finish the remaining scored writeup gaps."
+  implementation_next: "After the guided review, audit and finish remaining scored writeup gaps. Run checkpoint loading checks trajectory settings and restores the sampler state but does not verify the training data identity."
   review_debt:
+    - "在概念回顾中重看字节回退、跨分词器的损失比较、优化稳定性和续训证据。8 月的问卷和确认是历史学习记录。"
+    - "回顾从设计动机和要解决的问题出发，用 Mermaid 对照文字，关键实现按需展开。委托规则待讨论。"
     - "Owner review of §2 experiment answers in notes/a1/writeup.md"
     - "Owner correction/confirmation of notes/a1/bpe-knowhow.md"
     - "Owner correction/confirmation of notes/a1/model-architecture-knowhow.md"
@@ -352,3 +355,11 @@ session_log:
     note: "Completed §4.3 AdamW accounting draft; after restarting byte conversion from float32=4B, owner correctly derived 1B params=4GB and passed transfer: effective batch12 with physical batch3 needs four microbatches while fixed/peak activation memory is not multiplied; adamw_accounting learning owner-confirmed"
   - date: "2026-08-25"
     note: "Owner correctly explained the toy LR100 boundary (w→-w leaves squared loss unchanged), then replaced fragmented mini-question pacing with a segment-first cycle: map larger architecture, teach complete section, owner pushes to a written worksheet, agent reviews it as a whole"
+  - date: "2026-08-25"
+    note: "Taught consolidation segment 1 as one end-to-end token→batch→Transformer→loss→gradient→AdamW→evaluation/generation model; learning remains review_pending until the owner pushes to and completes the concentrated worksheet"
+  - date: "2026-08-29"
+    note: "Issued the seven-task Segment 1 end-to-end worksheet covering shapes, tokenizer/system tradeoffs, information flow, scale control, optimizer/resume causality, failure diagnosis, and evidence claims; awaiting whole-file owner submission"
+  - date: "2026-08-29"
+    note: "Owner self-reported Tasks 1, 2.1-2.3, and 3 understood and declined redundant writing; narrowed review to byte-fallback/cross-tokenizer-loss boundaries and Tasks 4-7, with connected reteaching followed later by only three integrated checks"
+  - date: "2026-11-18"
+    note: "回顾了下一 token 预测和一次更新。小实验验证了因果遮罩并厘清续训的证据边界。按学习者反馈改用设计动机和 Mermaid 导读，代码作为按需查阅的依据。暂无新的学习确认。"

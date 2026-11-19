@@ -60,9 +60,12 @@ answer. For each study segment:
 1. **Map the location.** Start with the course/assignment map: what has already been established,
    what this segment adds, what later reasoning depends on it, and what its finish line is. Bring the
    relevant handout excerpts or exact locations into the conversation.
-2. **Teach the complete segment.** Explain the architecture and concrete details as one connected
-   model: dataflow, mechanisms, formulas where useful, invariants, tradeoffs, failure modes, and links
-   to behavior/quality/stability/cost. Do not interrupt the explanation with a sequence of mini-quizzes.
+2. **Teach the complete segment.** Start with the goal, the problem each step solves, and why it is
+   designed that way. Pair a short Mermaid flowchart with prose that explains the purpose of its
+   steps. When discussing code, explain the design first and bring in the relevant implementation
+   when it clarifies a decision or verifies a claim. Introduce formulas, shapes, and implementation
+   details where they help explain the mechanism, tradeoff, or failure mode. Keep the segment
+   connected and teach it before asking review questions.
 3. **Demonstrate and ship.** The agent implements Tier 2/3 work, runs tests or experiments, and
    connects the evidence back to the segment model. Boilerplate remains delegated.
 4. **Wait for the owner's push.** When the owner says to continue, provide a bounded, coherent set of
@@ -92,8 +95,10 @@ silent code delivery followed by a retrospective essay, and manufactured decisio
 
 ## Collaboration rules
 
-- Teach from the current situation with a visible course/assignment map and a coherent segment-sized
-  explanation tied to handout sections, tests, code, and experimental evidence.
+- Apply the owner's corrections to the current work. When a correction changes how future sessions
+  should work, update the applicable `AGENTS.md` in the same turn without waiting for a separate
+  request. Revise the existing rule and reconcile conflicting instructions. Keep explicitly one-off
+  directions scoped to the current task.
 - Do not use a chain of short questions as the curriculum. Teach first; assign a bounded written set
   after the owner explicitly pushes to the exercise/review stage.
 - Decide only at real forks; do not manufacture decision menus.

@@ -33,6 +33,38 @@ periodically:
   → save best / periodic / last checkpoints
 ```
 
+## Cross-module causal chain
+
+The training loop closes the whole A1 system rather than merely calling independent utilities:
+
+```text
+raw text
+  → byte-level BPE: compression policy and vocabulary IDs
+  → serialized token stream with document delimiters
+  → shifted x/y windows `(B,T)`
+  → embedding and L shape-preserving Transformer blocks `(B,T,D)`
+  → LM-head logits `(B,T,V)`
+  → mean next-token cross-entropy, one scalar
+  → backward gradients for every contributing parameter
+  → one global clip decision
+  → scheduled AdamW update with persistent moment state
+  → changed next-token distribution, measured on held-out data and exposed by generation
+```
+
+The tokenizer changes both the statistical task and systems cost: larger or better-fitted tokens shorten
+the sequence but enlarge the embedding/LM-head vocabulary. Attention communicates across allowed
+positions; the FFN transforms features independently at each position; residual paths and RMSNorm make
+deep optimization tractable. Cross-entropy supplies a dense training signal at every position, whereas
+generation consumes only the final-position distribution repeatedly and therefore compounds earlier
+choices. A validation-loss improvement establishes better average held-out next-token prediction under
+that tokenizer and dataset; it does not by itself establish factuality, long-range coherence, or a better
+decoding policy.
+
+An optimizer step is history-dependent. The same weights without AdamW moments, schedule position, and
+sampler/RNG state are a usable inference model but not a trajectory-equivalent training resume. This is
+why `best.pt` and `last.pt` answer different questions: the former selects observed validation quality;
+the latter preserves the state needed to continue the experiment causally.
+
 ## Loss-curve failure map
 
 | Evidence | First interpretation | Next discriminating check |
@@ -62,12 +94,33 @@ periodically:
 ## Smoke evidence (2026-08-02)
 
 - Tiny 1-layer model, one fixed minibatch: cross-entropy **4.102376 → 0.000080**
-  in 150 updates. This rules out a systemic break in target alignment, forward/backward,
-  clipping, or AdamW update.
+  in 150 updates. This verifies that forward, backward, clipping, and AdamW together can fit
+  the supplied targets. The example constructs its targets directly, so `get_batch` is outside this check.
 - Continuous 8 steps versus 4 steps + save/load + 4 steps: maximum parameter difference
   **0.0**. Optimizer-state resume is trajectory-equivalent for the deterministic smoke.
 - Full CLI on memory-mapped synthetic train/validation arrays produced decreasing
   validation loss plus `metrics.jsonl`, `best.pt`, periodic checkpoints, and `last.pt`.
+
+## 2026-11-18 代码导读：从一批 token 到更新和续训
+
+**从目标回顾。** 我们要让模型看到前文时，更可能预测出实际接下来的内容。原文已经给出了答案，构造样本时把它用作标签。
+因果遮罩让模型在并行预测多个位置时仍然只能看各自的前文。交叉熵衡量模型给正确答案的概率，反向传播和 AdamW
+用这个信号修改参数。细节按解决的问题展开，下面的代码位置用于查证。
+
+`train.py:373` 是 `train()` 的入口，`train.py:450` 开始迭代。`training.py:24` 的 `get_batch`
+从一段 token 流取等长窗口，标签向后错一位。
+`nn.py:348` 的 `TransformerLM.forward` 返回每个位置的词表 logits。`training.py:14` 的交叉熵取出正确
+token 的分数并计算平均负对数概率。`train.py:197` 的 `train_accumulated_step` 清空旧梯度，累积反传，
+裁剪全局梯度，然后调用 `optim.py` 的 AdamW 更新权重。讲义对应 §3.1、§4.1、§5.1–5.3，见
+`docs/handouts/cs336_assignment1_basics.md:552-568,1287-1305,1563-1578,1613-1627,1659-1669`。
+
+- CPU 小例子使用 `B=1, T=3, D=16, V=32`。token 流 `[5, 8, 3, 9]` 取出输入 `[5, 8, 3]` 和标签 `[8, 3, 9]`，
+  logits 形状为 `(1, 3, 32)`。把第三个输入改成 `6`，前两个位置的 logits 最大差为 `0.0`，第三个发生变化。
+  同一个 batch 做一次 AdamW 更新，loss 从 `3.805729` 降到 `2.840287`。这次测量只涉及这个 batch。
+- 实际 `train()` 用随机采样与学习率调度连续跑 8 步，再比较从第 4 步续到第 8 步。原数据续训与连续训练
+  的最终参数最大绝对差为 `0.0`。训练 token 全部加一（模 32）后，程序同样接受续训，但最大差为
+  `0.000747517`。检查点记录采样器状态与训练配置，当前加载器没有校验原 token 流的身份或内容。
+  这是本次 CPU 配置下的结果。旧的固定 batch、固定 LR 检查只直接验证优化器状态与权重能恢复。
 
 ## Real TinyStories sweep evidence (2026-08-02)
 
